@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+    <meta charset="UTF-8">
+    <title>简单日历效果</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+     <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+    <!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        ul {
+            display: flex;
+            flex-direction: row;
+        }
+        li {
+            display: block;
+            list-style: none;
+        }
+        body {
+            /* background-color: rgb(236, 195, 202); */
+            background-image: url("/static/bg.png");
+            background-repeat: no-repeat;
+            background-size: 100% 100% ;
+            background-attachment: fixed;
+        }
+
+        .cal-container .year-month>div:first-child>span,
+        .cal-container .year-month .pre,
+        .cal-container .year-month .next,
+        .cal-container .weeks>ul>li,
+        .cal-container .days>ul .style-default {
+            cursor: pointer;
+        }
+        .cal-container .year-month .pre:hover,
+        .cal-container .year-month .next:hover,
+        .cal-container .weeks>ul>li:hover {
+            text-shadow: 2px 2px 2px rgb(121, 121, 121);
+        }
+
+        #audioElement,
+        .event-box,
+        .eventListBox,
+        .cal-container {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            width: 600px;
+            margin-left: -300px;
+            box-shadow: 7px 7px 7px rgb(112, 112, 112);
+            background-color: aquamarine;
+        }
+        .event-box{
+            top: 75%;
+            height: 6rem;
+            flex-direction: row;
+            padding: 2rem;
+        }
+        .event-box > #eventInput {
+            width: 40%;
+            height: 2rem;
+            margin-right: 5%;
+        }
+        .event-box > #eventDate {
+            margin-left: 5%;
+            width: 25%;
+            height: 2rem;
+            margin-right: 5%;
+        }
+        .event-box > #eventSubmit{
+            margin-left: 5%;
+            width: 25%;
+            height: 2rem;
+            margin-right: 5%;
+        }
+        #audioElement{
+            background-color: transparent;
+            top: 80%;
+            left: 95%;
+            box-shadow: None;
+        }
+        .cal-container .year-month {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background-color: rgb(107, 215, 168);
+        }
+        .cal-container .year-month>div:first-child {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 70px;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            letter-spacing: 3px;
+        }
+        .cal-container .year-month>div:first-child>span {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 700;
+            color: white;
+        }
+        .cal-container .year-month>div:first-child>span:first-child {
+            font-size: 40px;
+        }
+        .cal-container .year-month>div:first-child>span:last-child {
+            font-size: 25px;
+        }
+        .cal-container .year-month .pre,
+        .cal-container .year-month .next {
+            position: absolute;
+            top: 50%;
+            height: 40px;
+            transform: translateY(-20px);
+            margin: 0 20px;
+            font-size: 40px;
+            color: white;
+        }
+        .cal-container .year-month .next {
+            right: 0;
+        }
+
+        .cal-container .weeks>ul,
+        .cal-container .days>ul {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+            padding: 0 2.5px;
+            background-color: rgb(202, 202, 202);
+        }
+        .cal-container .days>ul {
+            padding: 20px 0;
+            background-color: rgb(225, 225, 225);
+        }
+        .cal-container .weeks>ul>li {
+            width: 85px;
+            font-size: 20px;
+            font-weight: 700;
+            color: rgb(75, 75, 75);
+            text-align: center;
+            line-height: 50px;
+        }
+
+        .style-default {
+            width: 50px;
+            height: 50px;
+            margin: 0 17.5px;
+            font-size: 20px;
+            font-weight: 700;
+            color: rgb(75, 75, 75);
+            text-align: center;
+            line-height: 50px;
+        }
+        .days>ul .style-default:hover {
+            background-color: rgb(202, 202, 202);
+        }
+        .cal-container .days>ul .bg-style {
+            background-color: rgb(107, 215, 168);
+        }
+        .no-style {
+            width: 50px;
+            height: 50px;
+            margin: 0 17.5px;
+        }
+        .link {
+            position: absolute;
+            width: 240px;
+            height: 150px;
+            margin-top: 400px;
+            margin-left: 150px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+  <ul class="navbar-nav">
+    <li class="nav-item active">
+      <a class="nav-link" href="#" id="nav" style="color:blue;font-size:x-large;"></a>
+    </li>
+  </ul>
+</nav>
+<script>
+    var aEle = document.getElementById("nav");
+    var username = localStorage['username'];
+    aEle.innerText = "Welcome，" + username + "!";
+</script>
+
+
+    <div class="cal-container">
+        <div class="year-month">
+            <div>
+                <span id="month"></span>
+                <span id="year"></span>
+            </div>
+            <div class="pre" id="pre-month">&lt;</div>
+            <div class="next" id="next-month">&gt;</div>
+        </div>
+        <div class="weeks">
+            <ul>
+                <li>Mon</li>
+                <li>Tue</li>
+                <li>Wed</li>
+                <li>Thu</li>
+                <li>Fri</li>
+                <li>Sat</li>
+                <li>Sun</li>
+            </ul>
+        </div>
+        <div class="days">
+            <ul id="day"></ul>
+        </div>
+    </div>
+    <div class="event-box">
+        <input type="text" id="eventInput" name="eventInput">
+        <input type="date" id="eventDate" name="eventDate">
+        <button type="submit" id="eventSubmit" onclick="set_event()">Add Event</button>
+    </div>
+    <script>
+        function set_event(){
+            console.log("work");
+
+            var eventTitle = document.getElementById("eventInput").value;
+            var dateText = document.getElementById("eventDate").value;
+
+            localStorage.setItem(dateText, eventTitle);
+
+            console.log("dateText: " + dateText);
+            console.log(localStorage.getItem(dateText));
+
+            //1.创建div标签
+            var div1=document.createElement('div');
+            //2.向标签中添加内容
+            div1.innerHTML = dateText + ": " + eventTitle;
+            //3.把标签div写入body中
+            var elb = document.getElementById("eventListBox");
+            elb.insertBefore(div1, elb.children[0]);
+
+            // 高亮
+            var c = dateText.substring(8, 10);
+            var hightLightElement = document.getElementById(String(parseInt(c, 10)));
+            hightLightElement.style.backgroundColor = "yellow";
+        }
+    </script>
+    <div class="link">
+        <p>
+             <a href = "compute_time"> Click here for timing></a>
+
+        </p>
+
+        <p>
+            hi! this is a link for my part
+        </p>
+    </div>
+
+    <div class="eventListBox" id="eventListBox" style="top: 87%;height:100px;overflow:auto;background:#EEEEEE;padding:8px;border:solid;border-color:gray;border-size:15px;">
+    </div>
+
+    <div id="audioElement">
+        <audio controls  id="myAudio" >
+            <source src="/static/music.mp3" type="audio/mpeg">
+        </audio>
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="start()">play</button>
+            <button type="button" class="btn btn-primary" onclick="pause()">pause</button>
+            <button type="button" class="btn btn-primary" onclick="volUp()"> audio +</button>
+            <button type="button" class="btn btn-primary" onclick="volDown()"> audio -</button>
+        </div>
+    </div>
+    <script>
+        var audioDom = document.getElementById("myAudio")
+        function start(){
+            audioDom.play()
+        }
+        function pause(){
+            audioDom.pause()
+        }
+        function volUp(){
+            audioDom.volume += 0.1
+        }
+        function volDown(){
+            audioDom.volume -= 0.1
+        }
+
+    </script>
+    <script>
+        // get year month date weekday
+        let date = new Date();
+        Y = date.getFullYear();
+        M = date.getMonth();
+        W = date.getDay();
+        D = date.getDate();
+        isSelect = true;    //true为选择了月，false为选择了年（添加文本阴影）
+
+        // 更新当前年
+        let yearNow = document.getElementById("year");
+        yearNow.innerHTML = Y;
+        // 更新当前月
+        let monthNow = document.getElementById("month");
+        monthNow.innerHTML = monthAndMaxDay(Y, M)[0];
+        // 判断选中年还是月（添加文本阴影）
+        selected(isSelect);
+        //更新当前日
+        let days = document.getElementById("day");
+        updateAllDays(Y, M);
+
+        // 选择按月切换还是按年切换
+        yearNow.addEventListener("click", function() {
+            isSelect = false
+            selected(isSelect);
+        });
+        monthNow.addEventListener("click", function() {
+            isSelect = true;
+            selected(isSelect);
+        });
+
+        // 左右切换日期
+        let previous = document.getElementById("pre-month");
+        previous.addEventListener("click", function() { changePage(true); });
+        let next = document.getElementById("next-month");
+        next.addEventListener("click", function() { changePage(false); });
+
+        // 按日查询对应的星期几
+        function dayToStar(year, month, day) {
+            let theDate = new Date(year, month, day);
+            return theDate.getDay();
+        }
+
+        // 查询一个月对应的英文命名和最大天数
+        function monthAndMaxDay(year, month) {
+            let month_now = "";
+            let maxDay = 0;     // 一个月的最大天数
+            switch(month+1) {
+                case 1: month_now = "January"; maxDay = 31; break;
+                case 2:
+                    month_now = "February";
+                    if(year % 4 == 0) {
+                        maxDay = 29;
+                    } else {
+                        maxDay = 28;
+                    }
+                    break;
+                case 3: month_now = "March"; maxDay = 31; break;
+                case 4: month_now = "April"; maxDay = 30; break;
+                case 5: month_now = "May"; maxDay = 31; break;
+                case 6: month_now = "June"; maxDay = 30; break;
+                case 7: month_now = "July"; maxDay = 31; break;
+                case 8: month_now = "August"; maxDay = 31; break;
+                case 9: month_now = "September"; maxDay = 30; break;
+                case 10: month_now = "October"; maxDay = 31; break;
+                case 11: month_now = "November"; maxDay = 30; break;
+                case 12: month_now = "December"; maxDay = 31; break;
+                default: month = "";
+            }
+            return [month_now, maxDay];
+        }
+
+        // 更新当前月的所有天数
+        function updateAllDays(year, month) {
+            let offset = dayToStar(year, month, 1);
+            let maxDay = monthAndMaxDay(year, month)[1];
+
+            // 实现日期和星期对应
+            for(let i=0; i<offset; i++) {
+                let day = document.createElement("li");
+                day.className = "no-style";
+                days.appendChild(day);
+            }
+
+            for(let i=1; i<=maxDay; i++) {
+                let day = document.createElement("li");
+                let dateNow = new Date();
+                // 当前日期有绿色背景
+                if(year == dateNow.getFullYear() && month == dateNow.getMonth() && i == dateNow.getDate()) {
+                    day.className = "style-default bg-style"
+                } else {
+                    day.className = "style-default";
+                }
+                day.id = i;
+                day.innerText = i
+                days.appendChild(day);
+            }
+        }
+
+        // 选择按月切换还是按年切换
+        function selected(boolean) {
+            if(boolean) {
+                monthNow.style.textShadow = "2px 2px 2px rgb(121, 121, 121)";
+                yearNow.style.textShadow = "none";
+            } else {
+                monthNow.style.textShadow = "none";
+                yearNow.style.textShadow = "2px 2px 2px rgb(121, 121, 121)";
+            }
+        }
+
+        // 点击切换事件
+        function changePage(boolean) {
+            // 按年切换还是按月切换
+            if(isSelect) {
+                // 向前切换还是向后切换
+                if(boolean) {
+                    M = M-1;
+                    if(M == -1) {
+                        Y--;
+                        M = 11;
+                    }
+                } else {
+                    M = M+1;
+                    if(M == 12) {
+                        Y++;
+                        M = 0;
+                    }
+                }
+            } else {
+                if(boolean) {
+                    Y--;
+                } else {
+                    Y++;
+                }
+            }
+            yearNow.innerHTML = Y;
+            monthNow.innerHTML = monthAndMaxDay(Y, M)[0];
+            // 清空一个月所有天数
+            days.innerHTML = "";
+            // 重新添加一个月所有天数
+            updateAllDays(Y, M);
+
+            console.log(1);
+            setTimeout("highLight()", 500);
+        }
+
+        function highLight() {
+            console.log(2);
+            year = document.querySelector("#year").innerText;
+            month = document.querySelector("#month").innerText
+            month_num_str = return_month_num_str(month);
+            liEles = document.querySelectorAll("#day > li");
+            liEles.forEach(element => {
+                day = element.innerText;
+                day_num_str = return_day_num_str(day);
+                element_query_str = year + "-" + month_num_str + "-" + day_num_str;
+
+                console.log(element_query_str);
+
+                // 开始查询本地数据文件
+                if (localStorage.getItem(element_query_str) != null) {
+                    console.log(3);
+                    console.log(localStorage.getItem(element_query_str));
+                    // 给元素增加特殊颜色的背景
+                    element.style.backgroundColor = "yellow";
+                    // 给元素增加event属性
+                    var event_content_str = localStorage.getItem(element_query_str);
+                    var event_content = document.createAttribute("event_content");
+                    event_content.nodeValue = event_content_str;
+                    element.attributes.setNamedItem(event_content);
+
+                    element.onclick = function() {
+                        var message_box_str = element.getAttribute("event_content");
+                        window.alert(message_box_str);
+                    }
+                }
+
+            });
+        }
+
+        function return_month_num_str(month) {
+            if (month == "January") {
+                return "01"
+            }
+            if (month == "February") {
+                return "02"
+            }
+            if (month == "March") {
+                return "03"
+            }
+            if (month == "April") {
+                return "04"
+            }
+            if (month == "May") {
+                return "05"
+            }
+            if (month == "June") {
+                return "06"
+            }
+            if (month == "July") {
+                return "07"
+            }
+            if (month == "August") {
+                return "08"
+            }
+            if (month == "September") {
+                return "09"
+            }
+            if (month == "October") {
+                return "10"
+            }
+            if (month == "November") {
+                return "11"
+            }
+            if (month == "December") {
+                return "12"
+            }
+
+        }
+
+        function return_day_num_str(day) {
+            if (day == "1") {
+                return "01";
+            }
+            if (day == "2") {
+                return "02";
+            }
+            if (day == "3") {
+                return "03";
+            }
+            if (day == "4") {
+                return "04";
+            }
+            if (day == "5") {
+                return "05";
+            }
+            if (day == "6") {
+                return "06";
+            }
+            if (day == "7") {
+                return "07";
+            }
+            if (day == "8") {
+                return "08";
+            }
+            if (day == "9") {
+                return "09";
+            }
+            else{
+                return day;
+            }
+        }
+        </script>
+</body>
+</html>
